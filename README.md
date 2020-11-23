@@ -31,7 +31,7 @@ If you are using Podman, execute the following commands:
 ```
 podman pod create --name partkeepr-pod -p 127.0.0.1:7155:80
 podman run --pod partkeepr-pod --name partkeepr-mariadb -v ./db:/var/lib/mysql -e MYSQL_RANDOM_ROOT_PASSWORD=yes -e MYSQL_DATABASE=partkeepr -e MYSQL_USER=partkeepr -e MYSQL_PASSWORD=partkeepr -d mariadb:10.0
-podman run --name partkeepr-web --pod partkeepr-pod -v ./data:/app/data/ -v ./config:/app/app/config -d localhost/partkeepr:latest
+podman run --name partkeepr-web --pod partkeepr-pod -v ./data:/app/data/ -v ./config:/app/app/config -d f0rc3/partkeepr:latest
 podman exec -it partkeepr-web bash
 ```
 
@@ -41,7 +41,7 @@ If you are using Docker, execute the following commands:
 
 ```
 docker run -p 127.0.0.1:3310:3306 --name partkeepr-mariadb -v ./db:/var/lib/mysql -e MYSQL_RANDOM_ROOT_PASSWORD=yes -e MYSQL_DATABASE=partkeepr -e MYSQL_USER=partkeepr -e MYSQL_PASSWORD=partkeepr -d mariadb:10.0
-docker run -p 127.0.0.1:7155:80 --name partkeepr-web -v ./data:/app/data/ -v ./config:/app/app/config -d localhost/partkeepr:latest
+docker run -p 127.0.0.1:7155:80 --name partkeepr-web -v ./data:/app/data/ -v ./config:/app/app/config -d f0rc3/partkeepr:latest
 docker exec -it partkeepr-web bash
 ```
 
