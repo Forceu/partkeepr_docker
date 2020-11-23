@@ -63,11 +63,8 @@ COPY partkeepr-apache.conf /etc/apache2/sites-enabled/000-default.conf
 RUN echo "date.timezone=UTC"> /usr/local/etc/php/conf.d/partkeepr.ini
 RUN a2enmod rewrite
 
-#copy source files
+#copy source files and change ownership
 RUN cd $APP_HOME \
     && curl -sL https://downloads.partkeepr.org/partkeepr-${PARTKEEPR_VERSION}.tbz2 \
-        | tar --strip-components=1 -jxvf -
-
-#change ownership
-RUN chown -R www-data:www-data $APP_HOME && rm /usr/bin/qemu-arm-static
+        | tar --strip-components=1 -jxvf - && chown -R www-data:www-data $APP_HOME && rm /usr/bin/qemu-arm-static
 
