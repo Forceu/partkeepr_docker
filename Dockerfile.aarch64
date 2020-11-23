@@ -20,6 +20,9 @@ FROM arm64v8/php:7.1-apache
 
 ENV PARTKEEPR_VERSION 1.4.0
 
+#Remove the line below, if not compiling on an x64/x86 machine
+COPY qemu-aarch64-static /usr/bin/qemu-aarch64-static
+
 #install all the dependencies
 RUN apt-get update && apt-get install -y \
       libicu-dev \
@@ -66,5 +69,5 @@ RUN cd $APP_HOME \
         | tar --strip-components=1 -jxvf -
 
 #change ownership
-RUN chown -R www-data:www-data $APP_HOME
+RUN chown -R www-data:www-data $APP_HOME && rm /usr/bin/qemu-aarch64-static
 
