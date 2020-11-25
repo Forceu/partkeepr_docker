@@ -32,8 +32,8 @@ RUN apt-get update && apt-get install -y \
       libpng-dev \
       nano \
       libldap2-dev \
-    && rm -r /var/lib/apt/lists/* \
-    && docker-php-ext-configure pdo_mysql --with-pdo-mysql=mysqlnd \
+    && rm -r /var/lib/apt/lists/* 
+RUN docker-php-ext-configure pdo_mysql --with-pdo-mysql=mysqlnd \
     && docker-php-ext-install \
       intl \
       mbstring \
@@ -57,7 +57,8 @@ RUN usermod -u 1000 www-data && groupmod -g 1000 www-data
 
 #change apache setting
 COPY partkeepr-apache.conf /etc/apache2/sites-enabled/000-default.conf
-RUN echo "date.timezone=UTC"> /usr/local/etc/php/conf.d/partkeepr.ini
+RUN sed 's@;date.timezone =@date.timezone = UTC@;s@max_execution_time = .*@max_execution_time = 72000@;s@memory_limit = .*@memory_limit = 512M@' /usr/local/etc/php/php.ini-production > /usr/local/etc/php/php.ini
+
 RUN a2enmod rewrite
 
 #copy source files and change ownership
