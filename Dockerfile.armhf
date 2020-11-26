@@ -20,8 +20,8 @@ FROM arm32v7/php:7.1-apache
 
 ENV PARTKEEPR_VERSION 1.4.0
 
-#Remove the line below, if not compiling on an x64/x86 machine
-COPY qemu-arm-static /usr/bin/qemu-arm-static
+#Uncomment the line below, if compiling on an x64/x86 machine
+#COPY qemu-arm-static /usr/bin/qemu-arm-static
 
 #install all the dependencies
 RUN apt-get update && apt-get install -y \
@@ -65,5 +65,8 @@ RUN a2enmod rewrite
 #copy source files and change ownership
 RUN cd $APP_HOME \
     && curl -sL https://downloads.partkeepr.org/partkeepr-${PARTKEEPR_VERSION}.tbz2 \
-        | tar --strip-components=1 -jxvf - && chown -R www-data:www-data $APP_HOME && rm /usr/bin/qemu-arm-static
+        | tar --strip-components=1 -jxvf - && chown -R www-data:www-data $APP_HOME
+
+#Uncomment the line below, if compiling on an x64/x86 machine
+#RUN rm /usr/bin/qemu-arm-static
 

@@ -1,2 +1,4 @@
 qemu-aarch64-static
 qemu-arm-static
+Dockerfile.nginx
+partkeepr-nginx.conf

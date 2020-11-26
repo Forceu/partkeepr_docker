@@ -1,0 +1,42 @@
+name: Docker Publish arm32
+
+on:
+  push:
+    branches: master
+
+
+  pull_request:
+
+env:
+  IMAGE_NAME: partkeepr
+  VERSION_NUMBER: 1.4.0
+  DOCKER_FILE: Dockerfile.armhf
+  ARCH: arm32v7
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v2
+      - name: install buildx
+        id: buildx
+        uses: crazy-max/ghaction-docker-buildx@v1
+        with:
+          version: latest
+      - name: login to docker hub
+        run: echo "${{ secrets.DOCKER_PW }}" | docker login -u "${{ secrets.DOCKER_USER }}" --password-stdin
+      - name: build the image
+        run: |
+          docker buildx build --file $DOCKER_FILE \
+            --tag f0rc3/partkeepr:$ARCH-latest \
+            --platform linux/arm/v6 .
+      - name: push the the image
+        if: github.event_name == 'push'
+        run: docker tag f0rc3/partkeepr:$ARCH-latest f0rc3/partkeepr:$ARCH-$VERSION_NUMBER
+      - name: push the the image
+        if: github.event_name == 'push'
+        run: docker push f0rc3/partkeepr:$ARCH-latest
+      - name: push the the image
+        if: github.event_name == 'push'
+        run: docker push f0rc3/partkeepr:$ARCH-$VERSION_NUMBER
