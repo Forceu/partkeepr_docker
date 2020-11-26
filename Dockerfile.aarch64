@@ -20,7 +20,7 @@ FROM arm64v8/php:7.1-apache
 
 ENV PARTKEEPR_VERSION 1.4.0
 
-Uncomment the line below, if compiling on an x64/x86 machine
+#Uncomment the line below, if compiling on an x64/x86 machine
 #COPY qemu-aarch64-static /usr/bin/qemu-aarch64-static
 
 #install all the dependencies
