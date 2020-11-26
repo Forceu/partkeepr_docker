@@ -5,6 +5,7 @@ on:
     branches: master
 
 
+  pull_request:
 
 env:
   IMAGE_NAME: partkeepr
@@ -27,8 +28,11 @@ jobs:
         run: echo "${{ secrets.DOCKER_PW }}" | docker login -u "${{ secrets.DOCKER_USER }}" --password-stdin
       - name: build the image
         run: |
-          docker buildx build --file $DOCKER_FILE --push \
+          docker buildx build --file $DOCKER_FILE \
             --tag f0rc3/partkeepr:$ARCH-latest \
             --platform linux/arm/v6 .
+      - name: push the the image
+        if: github.event_name == 'push'
         run: docker tag f0rc3/partkeepr:$ARCH-latest f0rc3/partkeepr:$ARCH-$VERSION_NUMBER
+        run: docker push f0rc3/partkeepr:$ARCH-latest
         run: docker push f0rc3/partkeepr:$ARCH-$VERSION_NUMBER
