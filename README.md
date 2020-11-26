@@ -29,21 +29,23 @@ If you already have existing data, from the old installation copy the folder `/d
 If you are using Podman, execute the following commands:
 
 ```
-podman pod create --name partkeepr-pod -p 127.0.0.1:7155:80
+podman pod create -p 127.0.0.1:7155:80 --name partkeepr-pod 
 podman run --pod partkeepr-pod --name partkeepr-mariadb -v ./db:/var/lib/mysql -e MYSQL_RANDOM_ROOT_PASSWORD=yes -e MYSQL_DATABASE=partkeepr -e MYSQL_USER=partkeepr -e MYSQL_PASSWORD=partkeepr -d mariadb:10.0
 podman run --name partkeepr-web --pod partkeepr-pod -v ./data:/app/data/ -v ./config:/app/app/config -d f0rc3/partkeepr:latest
 podman exec -it partkeepr-web bash
 ```
+If you need to access the server from a different device, replace the `podman pod create -p 127.0.0.1:7155:80` part with `podman pod create -p 7155:80`. Please note that this is insecure, as the traffic is not encrypted!
 
 #### Docker
 
-If you are using Docker, execute the following commands:
+If you are using Docker, execute the following commands (change the folder paths first):
 
 ```
-docker run -p 127.0.0.1:3310:3306 --name partkeepr-mariadb -v ./db:/var/lib/mysql -e MYSQL_RANDOM_ROOT_PASSWORD=yes -e MYSQL_DATABASE=partkeepr -e MYSQL_USER=partkeepr -e MYSQL_PASSWORD=partkeepr -d mariadb:10.0
-docker run -p 127.0.0.1:7155:80 --name partkeepr-web -v ./data:/app/data/ -v ./config:/app/app/config -d f0rc3/partkeepr:latest
+docker run -p 127.0.0.1:3310:3306 --name partkeepr-mariadb -v /path/to/your/folder/db:/var/lib/mysql -e MYSQL_RANDOM_ROOT_PASSWORD=yes -e MYSQL_DATABASE=partkeepr -e MYSQL_USER=partkeepr -e MYSQL_PASSWORD=partkeepr -d mariadb:10.0
+docker run -p 127.0.0.1:7155:80 --name partkeepr-web -v /path/to/your/folder/data:/app/data/ -v /path/to/your/folder/config:/app/app/config -d f0rc3/partkeepr:latest
 docker exec -it partkeepr-web bash
 ```
+If you need to access the server from a different device, replace the `docker run -p 127.0.0.1:7155:80` part with `docker run -p 7155:80`. Please note that this is insecure, as the traffic is not encrypted!
 
 ### Container setup
 
