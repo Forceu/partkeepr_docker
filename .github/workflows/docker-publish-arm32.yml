@@ -34,5 +34,9 @@ jobs:
       - name: push the the image
         if: github.event_name == 'push'
         run: docker tag f0rc3/partkeepr:$ARCH-latest f0rc3/partkeepr:$ARCH-$VERSION_NUMBER
+      - name: push the the image
+        if: github.event_name == 'push'
         run: docker push f0rc3/partkeepr:$ARCH-latest
+      - name: push the the image
+        if: github.event_name == 'push'
         run: docker push f0rc3/partkeepr:$ARCH-$VERSION_NUMBER
