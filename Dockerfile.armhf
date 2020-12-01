@@ -16,25 +16,28 @@
 #
 # Use 127.0.0.1 as MySQL host, not localhost!
 #
-FROM arm32v7/php:7.1-apache
+FROM arm32v7/php:7.1-fpm-alpine
 
 ENV PARTKEEPR_VERSION 1.4.0
 
-#Uncomment the line below, if compiling on an x64/x86 machine
-#COPY qemu-arm-static /usr/bin/qemu-arm-static
-
 #install all the dependencies
-RUN apt-get update && apt-get install -y \
-      libicu-dev \
-      libpq-dev \
-      libmcrypt-dev \
-      zlib1g-dev \
-      zip \
-      unzip \
-      libpng-dev \
-      nano \
-      libldap2-dev \
-    && rm -r /var/lib/apt/lists/*
+
+RUN apk update && apk add --update-cache \
+			nginx \
+			nano \
+			zip \
+			unzip \
+			libpng-dev \
+			libmcrypt-dev \
+			libpq \
+			zlib-dev \
+			icu-dev \
+			postgresql-dev \
+			ldb-dev \
+			openldap-dev \
+			libldap && \
+     rm -rf /var/cache/apk/*
+
 RUN docker-php-ext-configure pdo_mysql --with-pdo-mysql=mysqlnd \
     && docker-php-ext-install \
       intl \
@@ -51,22 +54,19 @@ RUN docker-php-ext-configure pdo_mysql --with-pdo-mysql=mysqlnd \
 
 #create project folder
 ENV APP_HOME /app
-RUN mkdir $APP_HOME
+RUN mkdir -p $APP_HOME && mkdir /run/nginx/
 WORKDIR $APP_HOME
 
-#change uid and gid of apache to docker user uid/gid
-RUN usermod -u 1000 www-data && groupmod -g 1000 www-data
-
-#change apache setting
-COPY partkeepr-apache.conf /etc/apache2/sites-enabled/000-default.conf
+#change nginx setting
+COPY copy/docker-php-entrypoint /usr/local/bin/docker-php-entrypoint
+COPY copy/partkeepr-nginx.conf /etc/nginx/conf.d/default.conf
 RUN sed 's@;date.timezone =@date.timezone = UTC@;s@max_execution_time = .*@max_execution_time = 72000@;s@memory_limit = .*@memory_limit = 512M@' /usr/local/etc/php/php.ini-production > /usr/local/etc/php/php.ini
-RUN a2enmod rewrite
+
 
 #copy source files and change ownership
 RUN cd $APP_HOME \
     && curl -sL https://downloads.partkeepr.org/partkeepr-${PARTKEEPR_VERSION}.tbz2 \
-        | tar --strip-components=1 -jxvf - && chown -R www-data:www-data $APP_HOME
+        | tar --strip-components=1 -jxf - && \
+    chown -R www-data:www-data $APP_HOME
 
-#Uncomment the line below, if compiling on an x64/x86 machine
-#RUN rm /usr/bin/qemu-arm-static
 
