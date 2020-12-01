@@ -23,6 +23,8 @@ jobs:
         run: echo "${{ secrets.DOCKER_PW }}" | docker login -u "${{ secrets.DOCKER_USER }}" --password-stdin
       - name: build the image
         run: |
-          docker buildx build --push --tag f0rc3/partkeepr:multiarch-latest --platform linux/amd64,linux/arm/v7,linux/arm64 . 
-          docker tag f0rc3/partkeepr:multiarch-latest f0rc3/partkeepr:multiarch-$VERSION_NUMBER
+          docker buildx build --tag buildresult --platform linux/amd64,linux/arm/v7,linux/arm64 . 
+          docker tag buildresult f0rc3/partkeepr:multiarch-latest
+          docker tag buildresult f0rc3/partkeepr:multiarch-$VERSION_NUMBER
+          docker push f0rc3/partkeepr:multiarch-latest
           docker push f0rc3/partkeepr:multiarch-$VERSION_NUMBER
