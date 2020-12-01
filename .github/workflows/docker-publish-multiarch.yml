@@ -4,6 +4,10 @@ on:
   push:
     branches: master
 
+
+env:
+  VERSION_NUMBER: 1.4.0
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -22,3 +26,5 @@ jobs:
           docker buildx build --push \
             --tag f0rc3/partkeepr:multiarch-latest \
             --platform linux/amd64,linux/arm/v7,linux/arm64 . 
+          docker tag f0rc3/partkeepr:multiarch-latest f0rc3/partkeepr:multiarch-$VERSION_NUMBER
+	  docker push f0rc3/partkeepr:multiarch-$VERSION_NUMBER
