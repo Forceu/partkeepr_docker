@@ -19,21 +19,8 @@ env:
   DOCKER_FILE: Dockerfile
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Run tests
-        run: docker build . --file $DOCKER_FILE
-
-  push:
-    # Ensure test job passes before pushing image.
-    needs: test
-
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push'
 
     steps:
       - uses: actions/checkout@v2
@@ -45,6 +32,7 @@ jobs:
         run: echo "${{ secrets.DOCKER_PW }}" | docker login -u ${{ secrets.DOCKER_USER }} --password-stdin
 
       - name: Push image
+        if: github.event_name == 'push'
         run: |
           docker tag $IMAGE_NAME f0rc3/partkeepr:latest
           docker tag $IMAGE_NAME f0rc3/partkeepr:$VERSION_NUMBER
