@@ -34,7 +34,8 @@ jobs:
       - name: push the the image
         if: github.event_name == 'push'
         run: |
-          docker tag buildresult f0rc3/partkeepr:$ARCH-latest
-          docker tag buildresult f0rc3/partkeepr:$ARCH-$VERSION_NUMBER
+          IMAGE_ID=$(docker images | awk '{print $3}' | awk 'NR==2') 
+          docker tag $IMAGE_ID f0rc3/partkeepr:$ARCH-latest
+          docker tag $IMAGE_ID f0rc3/partkeepr:$ARCH-$VERSION_NUMBER
           docker push f0rc3/partkeepr:$ARCH-latest
           docker push f0rc3/partkeepr:$ARCH-$VERSION_NUMBER
