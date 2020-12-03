@@ -4,6 +4,7 @@ on:
   push:
     branches: master
 
+  pull_request:
 
 env:
   VERSION_NUMBER: 1.4.0
@@ -22,6 +23,11 @@ jobs:
       - name: login to docker hub
         run: echo "${{ secrets.DOCKER_PW }}" | docker login -u "${{ secrets.DOCKER_USER }}" --password-stdin
       - name: build the image
+        run: |
+          docker buildx build --tag f0rc3/partkeepr:multiarch-latest --platform linux/amd64,linux/arm/v7,linux/arm64 .
+          docker buildx build --tag f0rc3/partkeepr:multiarch-$VERSION_NUMBER --platform linux/amd64,linux/arm/v7,linux/arm64 .
+      - name: push the image
+        if: github.event_name == 'push'
         run: |
           docker buildx build --push --tag f0rc3/partkeepr:multiarch-latest --platform linux/amd64,linux/arm/v7,linux/arm64 .
           docker buildx build --push --tag f0rc3/partkeepr:multiarch-$VERSION_NUMBER --platform linux/amd64,linux/arm/v7,linux/arm64 .
