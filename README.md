@@ -72,3 +72,8 @@ docker exec -i partkeepr-mariadb mysql -upartkeepr -ppartkeepr partkeepr < datab
 ```
 
 In the MySql setup, enter the IP of the MySql server. If you are using podman, you need to enter `127.0.0.1` instead of `localhost`!
+If you are using the default setup with docker, you need to select port 3010 instead of 3006 and point to the IP of the database container.
+
+If you are running the image on slow hardware and the setup cannot finish the step "Warming up cache", run the following:
+
+`docker exec -it partkeepr-web php /app/app/console cache:warmup`
