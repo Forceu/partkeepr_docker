@@ -60,6 +60,7 @@ WORKDIR $APP_HOME
 #change nginx setting
 COPY copy/docker-php-entrypoint /usr/local/bin/docker-php-entrypoint
 COPY copy/partkeepr-nginx.conf /etc/nginx/conf.d/default.conf
+copy copy/crontab /etc/cronjobpartkeepr
 RUN sed 's@;date.timezone =@date.timezone = UTC@;s@max_execution_time = .*@max_execution_time = 72000@;s@memory_limit = .*@memory_limit = 512M@' /usr/local/etc/php/php.ini-production > /usr/local/etc/php/php.ini
 
 

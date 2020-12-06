@@ -1,0 +1,2 @@
+0 0,6,12,18 * * * /usr/local/bin/php /app/app/console partkeepr:cron:run
+
