@@ -21,7 +21,6 @@ FROM php:7.1-fpm-alpine
 ENV PARTKEEPR_VERSION 1.4.0
 
 #install all the dependencies
-
 RUN apk update && apk add --update-cache \
 			nginx \
 			nano \
@@ -32,32 +31,44 @@ RUN apk update && apk add --update-cache \
 			libpq \
 			zlib-dev \
 			icu-dev \
+			curl-dev \
+			gnutls-dev \
+			libxml2-dev \
 			postgresql-dev \
 			ldb-dev \
 			openldap-dev \
+			freetype-dev \
+			libjpeg-turbo-dev \
 			libldap && \
      rm -rf /var/cache/apk/*
 
-RUN docker-php-ext-configure pdo_mysql --with-pdo-mysql=mysqlnd \
-    && docker-php-ext-install \
-      intl \
-      mbstring \
-      mcrypt \
-      pcntl \
-      pdo_mysql \
-      pdo_pgsql \
-      pgsql \
-      gd \
-      zip \
-      opcache \
-      ldap
+RUN docker-php-ext-configure ldap && \
+	docker-php-ext-configure bcmath && \ 
+	docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --enable-gd-native-ttf && \
+	docker-php-ext-configure pdo_mysql --with-pdo-mysql=mysqlnd && \
+	docker-php-ext-install \
+          ldap \
+          gd \
+	  intl \
+	  bcmath \
+	  mbstring \
+	  mcrypt \
+	  pcntl \
+	  dom \
+	  pdo \
+	  pdo_mysql \
+	  pdo_pgsql \
+	  pgsql \
+	  zip \
+	  opcache
+    
 
 #create project folder
 ENV APP_HOME /app
 RUN mkdir -p $APP_HOME && mkdir /run/nginx/
 WORKDIR $APP_HOME
 
-#change nginx setting
+#change nginx and php setting
 COPY copy/docker-php-entrypoint /usr/local/bin/docker-php-entrypoint
 COPY copy/partkeepr-nginx.conf /etc/nginx/conf.d/default.conf
 copy copy/crontab /etc/cronjobpartkeepr
@@ -70,3 +81,4 @@ RUN cd $APP_HOME \
         | tar --strip-components=1 -jxf - && \
     chown -R www-data:www-data $APP_HOME
 
+EXPOSE 80
