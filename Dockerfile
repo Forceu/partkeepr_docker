@@ -38,13 +38,14 @@ RUN apk update && apk add --update-cache \
 			ldb-dev \
 			openldap-dev \
 			freetype-dev \
-			libjpeg-turbo-dev \
+			jpeg-dev \
+			libjpeg \
 			libldap && \
      rm -rf /var/cache/apk/*
 
 RUN docker-php-ext-configure ldap && \
 	docker-php-ext-configure bcmath && \ 
-	docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --enable-gd-native-ttf && \
+	docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ --enable-gd-native-ttf && \
 	docker-php-ext-configure pdo_mysql --with-pdo-mysql=mysqlnd && \
 	docker-php-ext-install \
           ldap \
