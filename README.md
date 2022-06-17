@@ -59,7 +59,7 @@ chown www-data:www-data -R /app/app/config
 chown www-data:www-data -R /app/data
 ```
 
-Go to `http://127.0.0.1:7155/setup` and follow the setup. *Caution:* There seems to be a problem with the setup with the latest Chrome browser. If you are unable to proceed to the first setup setp, try Firefox. When asked for the auth key, execute the following command in the container shell:
+Go to `http://127.0.0.1:7155/setup` and follow the setup. *Caution:* There seems to be a problem with the setup with the latest Chrome browser. If you are unable to proceed to the first setup page, try Firefox. When asked for the auth key, execute the following command in the container shell:
 
 ```
 cat /app/app/authkey.php
