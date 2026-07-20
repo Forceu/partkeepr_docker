@@ -56,6 +56,7 @@ You are now in the root shell of the container. Execute the following commands:
 
 ```
 chown www-data:www-data -R /app/app/config
+chown www-data:www-data -R /app/app/cache
 chown www-data:www-data -R /app/data
 ```
 
