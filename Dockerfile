@@ -6,6 +6,7 @@
 # podman run --name partkeepr-web --pod partkeepr-pod -v ./data:/app/data/ -v ./config:/app/app/config -d localhost/partkeepr:latest
 # podman exec -it partkeepr-web bash
 ## chown www-data:www-data -R /app/app/config
+## chown www-data:www-data -R /app/app/cache
 ## chown www-data:www-data -R /app/data
 #
 # Open your.url/setup/
@@ -18,14 +19,13 @@
 #
 FROM php:7.1-fpm-alpine
 
-ENV PARTKEEPR_VERSION 1.4.0
-
 #install all the dependencies
 RUN apk update && apk add --update-cache \
 			nginx \
 			nano \
 			zip \
 			unzip \
+			patch \
 			libpng-dev \
 			libmcrypt-dev \
 			libpq \
@@ -72,14 +72,21 @@ WORKDIR $APP_HOME
 #change nginx and php setting
 COPY copy/docker-php-entrypoint /usr/local/bin/docker-php-entrypoint
 COPY copy/partkeepr-nginx.conf /etc/nginx/conf.d/default.conf
-copy copy/crontab /etc/cronjobpartkeepr
 RUN sed 's@;date.timezone =@date.timezone = UTC@;s@max_execution_time = .*@max_execution_time = 72000@;s@memory_limit = .*@memory_limit = 512M@' /usr/local/etc/php/php.ini-production > /usr/local/etc/php/php.ini
 
 
-#copy source files and change ownership
+#copy source files
 RUN cd $APP_HOME \
-    && curl -sL https://downloads.partkeepr.org/partkeepr-${PARTKEEPR_VERSION}.tbz2 \
-        | tar --strip-components=1 -jxf - && \
-    chown -R www-data:www-data $APP_HOME
+    && curl -sL https://github.com/partkeepr/PartKeepr/archive/refs/tags/1.4.0.tar.gz \
+        | tar --strip-components=1 -zxf -
+
+#apply patches and change ownership
+COPY patches/ /tmp/patches/
+RUN cd $APP_HOME \
+    && for p in /tmp/patches/*.patch; do \
+         echo "Applying $p" && patch -p1 < "$p"; \
+       done \
+    && rm -rf /tmp/patches \
+    && chown -R www-data:www-data $APP_HOME
 
 EXPOSE 80

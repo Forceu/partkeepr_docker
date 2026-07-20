@@ -1,0 +1,15 @@
+diff --git a/src/PartKeepr/FrontendBundle/Resources/public/js/PartKeepr.js b/src/PartKeepr/FrontendBundle/Resources/public/js/PartKeepr.js
+index e56cecc7..ac41c0e3 100644
+--- a/src/PartKeepr/FrontendBundle/Resources/public/js/PartKeepr.js
++++ b/src/PartKeepr/FrontendBundle/Resources/public/js/PartKeepr.js
+@@ -231,10 +231,6 @@ Ext.application({
+         if (data.schemaStatus !== "complete") {
+             alert(i18n("Your database schema is not up-to-date! Please re-run setup immediately!"));
+         }
+-
+-        if (data.inactiveCronjobCount > 0) {
+-            alert(i18n("The following cronjobs aren't running:") + "\n\n" + data.inactiveCronjobs.join("\n"));
+-        }
+     },
+     /*
+      * Checks for unacknowledged system notices. Triggers a service call against the server.

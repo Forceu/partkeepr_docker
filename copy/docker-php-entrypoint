@@ -7,5 +7,4 @@ if [ "${1#-}" != "$1" ]; then
 fi
 
 nginx
-crontab /etc/cronjobpartkeepr
 exec "$@"

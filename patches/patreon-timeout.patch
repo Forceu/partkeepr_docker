@@ -1,0 +1,25 @@
+diff --git a/src/PartKeepr/CoreBundle/Services/SystemService.php b/src/PartKeepr/CoreBundle/Services/SystemService.php
+index 8e5bf6ca..82f25c32 100644
+--- a/src/PartKeepr/CoreBundle/Services/SystemService.php
++++ b/src/PartKeepr/CoreBundle/Services/SystemService.php
+@@ -287,20 +287,6 @@ class SystemService extends ContainerAware
+     }
+ 
+     public function getPatreonStatus () {
+-        $statusURI = $this->container->getParameter("partkeepr.patreon.statusuri");
+-
+-        if ($statusURI === false) {
+-            return false;
+-        }
+-
+-        try {
+-            $client = new Client();
+-            $request = $client->createRequest('GET', $statusURI, ['timeout' => 3.14]);
+-            $request->send();
+-
+-            return json_decode($request->getResponse()->getBody(), true);
+-        } catch (\Exception $e) {
+             return false;
+-        }
+     }
+ }

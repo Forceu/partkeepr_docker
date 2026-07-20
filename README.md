@@ -2,18 +2,11 @@
 
 This is an up-to-date docker / podman image containing [PartKeepr](https://partkeepr.org/).
 
-#### Architectures
+The following patches are also added:
 
-The architectures supported by this image are:
-
-| Architecture | Tag |
-| :----: | --- |
-| x86-64 | latest |
-| arm64 | arm64v8-latest |
-| armhf | arm32v7-latest |
-| all* | multiarch-latest |
-
-\* experimental
+ * Disable Patreon lookup (otherwise the login page stalls for 120 seconds)
+ * Disable alert that cronjobs are not running
+ * Fix setup for some browsers
 
 ## Installation
 
@@ -60,7 +53,7 @@ chown www-data:www-data -R /app/app/cache
 chown www-data:www-data -R /app/data
 ```
 
-Go to `http://127.0.0.1:7155/setup` and follow the setup. *Caution:* There seems to be a problem with the setup with the latest Chrome browser. If you are unable to proceed to the first setup page, try Firefox. When asked for the auth key, execute the following command in the container shell:
+Go to `http://127.0.0.1:7155/setup` and follow the setup. *Caution:* There seems to be a problem with the setup with the latest Chrome browser. If you are unable to proceed to the first setup page, try disabling cache or use Firefox. When asked for the auth key, execute the following command in the container shell:
 
 ```
 cat /app/app/authkey.php

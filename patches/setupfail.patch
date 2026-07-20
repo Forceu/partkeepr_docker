@@ -1,0 +1,82 @@
+diff --git a/web/setup/js/SetupTests/AbstractTest.js b/web/setup/js/SetupTests/AbstractTest.js
+index 7d489d30..478f0b17 100644
+--- a/web/setup/js/SetupTests/AbstractTest.js
++++ b/web/setup/js/SetupTests/AbstractTest.js
+@@ -109,7 +109,9 @@ Ext.define('PartKeeprSetup.AbstractTest', {
+ 
+         if (this.success) {
+             this.fireEvent("complete", this);
+-        }
++        } else {
++            this.fireEvent("failed", this);
++	}
+ 
+     },
+     /**
+@@ -155,7 +157,9 @@ Ext.define('PartKeeprSetup.AbstractTest', {
+ 
+         if (this.success) {
+             this.fireEvent("complete", this);
+-        }
++        } else {
++            this.fireEvent("failed", this);
++	}
+ 
+         this.onAfterRunTest(obj);
+     },
+diff --git a/web/setup/js/SetupTests/WebserverRewriteTest.js b/web/setup/js/SetupTests/WebserverRewriteTest.js
+index 4d5205d6..0afa59c5 100644
+--- a/web/setup/js/SetupTests/WebserverRewriteTest.js
++++ b/web/setup/js/SetupTests/WebserverRewriteTest.js
+@@ -18,6 +18,8 @@ Ext.define('PartKeeprSetup.WebserverRewriteTest', {
+ 
+         if (this.success) {
+             this.fireEvent("complete", this);
+-        }
++        } else {
++            this.fireEvent("failed", this);
++	}
+     }
+ });
+diff --git a/web/setup/js/SetupTests/WebserverTest.js b/web/setup/js/SetupTests/WebserverTest.js
+index 1503b824..d3a64fd7 100644
+--- a/web/setup/js/SetupTests/WebserverTest.js
++++ b/web/setup/js/SetupTests/WebserverTest.js
+@@ -17,6 +17,8 @@ Ext.define('PartKeeprSetup.WebserverTest', {
+ 
+         if (this.success) {
+             this.fireEvent("complete", this);
+-        }
++        } else {
++            this.fireEvent("failed", this);
++	}
+     }
+ });
+diff --git a/web/setup/js/TestRunner.js b/web/setup/js/TestRunner.js
+index 962c1149..8123da1a 100644
+--- a/web/setup/js/TestRunner.js
++++ b/web/setup/js/TestRunner.js
+@@ -19,7 +19,7 @@ Ext.define('PartKeeprSetup.TestRunner', {
+ 	 * @param tests An array of tests
+ 	 */
+ 	run: function (tests, callback) {
+-		test = tests.shift();
++		var test = tests.shift();
+ 		this.tests = tests;
+ 		
+ 		if (!test) {
+@@ -33,8 +33,14 @@ Ext.define('PartKeeprSetup.TestRunner', {
+ 		 * We re-assign the event handler on each cycle due to the asynchronous nature of the ajax requests.
+ 		 */
+ 		test.on("complete", this.onTestComplete, this);
++		test.on("failed", this.onTestFailed, this);
+ 		test.run();
+ 	},
++	onTestFailed: function (test) {
++		test.un(this.onTestComplete);
++		test.un(this.onTestFailed);
++		this.fireEvent("failed", test);
++	},
+ 	/**
+ 	 * Callback when the test is complete
+ 	 * @param test The test which was run
