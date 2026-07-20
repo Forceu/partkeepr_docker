@@ -26,6 +26,7 @@ RUN apk update && apk add --update-cache \
 			zip \
 			unzip \
 			patch \
+			git \
 			libpng-dev \
 			libmcrypt-dev \
 			libpq \
@@ -75,18 +76,40 @@ COPY copy/partkeepr-nginx.conf /etc/nginx/conf.d/default.conf
 RUN sed 's@;date.timezone =@date.timezone = UTC@;s@max_execution_time = .*@max_execution_time = 72000@;s@memory_limit = .*@memory_limit = 512M@' /usr/local/etc/php/php.ini-production > /usr/local/etc/php/php.ini
 
 
-#copy source files
+#copy source files and change ownership
 RUN cd $APP_HOME \
     && curl -sL https://github.com/partkeepr/PartKeepr/archive/refs/tags/1.4.0.tar.gz \
-        | tar --strip-components=1 -zxf -
+        | tar --strip-components=1 -zxf - && cp /app/app/config/parameters.php.dist /app/app/config/parameters.php
 
-#apply patches and change ownership
+#apply patches
 COPY patches/ /tmp/patches/
 RUN cd $APP_HOME \
     && for p in /tmp/patches/*.patch; do \
          echo "Applying $p" && patch -p1 < "$p"; \
        done \
-    && rm -rf /tmp/patches \
-    && chown -R www-data:www-data $APP_HOME
+    && rm -rf /tmp/patches
+
+#install composer (signature-verified) - pinned to the 1.x branch since
+#composer.lock is in the old (pre-plugin-api-version) lock file format
+RUN cd /tmp \
+    && php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
+    && EXPECTED_SIGNATURE="$(curl -sS https://composer.github.io/installer.sig)" \
+    && ACTUAL_SIGNATURE="$(php -r "echo hash_file('SHA384', 'composer-setup.php');")" \
+    && if [ "$EXPECTED_SIGNATURE" != "$ACTUAL_SIGNATURE" ]; then \
+         echo "ERROR: composer installer signature mismatch" >&2; \
+         exit 1; \
+       fi \
+    && php composer-setup.php --1 --install-dir=/usr/local/bin --filename=composer \
+    && rm composer-setup.php
+
+#install PHP dependencies
+ENV COMPOSER_ALLOW_SUPERUSER=1
+ENV COMPOSER_MEMORY_LIMIT=-1
+ENV SYMFONY_ENV=prod
+RUN cd $APP_HOME \
+    && composer install --no-dev --optimize-autoloader --no-interaction \
+    && rm /app/app/config/parameters.php
+
+RUN chown -R www-data:www-data $APP_HOME
 
 EXPOSE 80
