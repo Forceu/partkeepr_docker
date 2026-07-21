@@ -17,16 +17,26 @@
 #
 # Use 127.0.0.1 as MySQL host, not localhost!
 #
-FROM php:7.1-fpm-alpine
 
-#install all the dependencies
+# ---------------------------------------------------------------------------
+# Stage 1: builder
+# Everything needed to compile PHP extensions, apply patches, and install
+# PHP dependencies. This whole stage is discarded after the build - none of
+# its extra weight (compiler toolchain, -dev headers, git, composer, patch
+# files, nano) ends up in the final image.
+# ---------------------------------------------------------------------------
+FROM php:7.1-fpm-alpine AS builder
+
+#install all the build-time dependencies
+#$PHPIZE_DEPS is provided by the official php image and expands to the
+#compiler toolchain (gcc, make, autoconf, etc.) needed by docker-php-ext-install
 RUN apk update && apk add --update-cache \
-			nginx \
-			nano \
+			$PHPIZE_DEPS \
 			zip \
 			unzip \
 			patch \
 			git \
+			curl \
 			libpng-dev \
 			libmcrypt-dev \
 			libpq \
@@ -45,7 +55,7 @@ RUN apk update && apk add --update-cache \
      rm -rf /var/cache/apk/*
 
 RUN docker-php-ext-configure ldap && \
-	docker-php-ext-configure bcmath && \ 
+	docker-php-ext-configure bcmath && \
 	docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ --enable-gd-native-ttf && \
 	docker-php-ext-configure pdo_mysql --with-pdo-mysql=mysqlnd && \
 	docker-php-ext-install \
@@ -63,20 +73,14 @@ RUN docker-php-ext-configure ldap && \
 	  pgsql \
 	  zip \
 	  opcache
-    
+
 
 #create project folder
 ENV APP_HOME /app
-RUN mkdir -p $APP_HOME && mkdir /run/nginx/
+RUN mkdir -p $APP_HOME
 WORKDIR $APP_HOME
 
-#change nginx and php setting
-COPY copy/docker-php-entrypoint /usr/local/bin/docker-php-entrypoint
-COPY copy/partkeepr-nginx.conf /etc/nginx/conf.d/default.conf
-RUN sed 's@;date.timezone =@date.timezone = UTC@;s@max_execution_time = .*@max_execution_time = 72000@;s@memory_limit = .*@memory_limit = 512M@' /usr/local/etc/php/php.ini-production > /usr/local/etc/php/php.ini
-
-
-#copy source files and change ownership
+#copy source files
 RUN cd $APP_HOME \
     && curl -sL https://github.com/partkeepr/PartKeepr/archive/refs/tags/1.4.0.tar.gz \
         | tar --strip-components=1 -zxf - && cp /app/app/config/parameters.php.dist /app/app/config/parameters.php
@@ -110,6 +114,47 @@ RUN cd $APP_HOME \
     && composer install --no-dev --optimize-autoloader --no-interaction \
     && rm /app/app/config/parameters.php
 
-RUN chown -R www-data:www-data $APP_HOME
+
+# ---------------------------------------------------------------------------
+# Stage 2: runtime
+# Only the runtime shared libraries (non -dev packages) + the compiled
+# extension artifacts and application source copied over from the builder.
+# No compiler, no git, no composer, no patch files, no nano.
+# ---------------------------------------------------------------------------
+FROM php:7.1-fpm-alpine
+
+ENV APP_HOME /app
+
+#runtime-only counterparts of the builder's -dev packages, plus nginx
+RUN apk update && apk add --update-cache \
+			nginx \
+			curl \
+			libpng \
+			libmcrypt \
+			libpq \
+			zlib \
+			icu-libs \
+			gnutls \
+			libxml2 \
+			ldb \
+			libldap \
+			freetype \
+			libjpeg && \
+     rm -rf /var/cache/apk/*
+
+RUN mkdir -p $APP_HOME && mkdir /run/nginx/
+WORKDIR $APP_HOME
+
+#change nginx and php setting
+COPY copy/docker-php-entrypoint /usr/local/bin/docker-php-entrypoint
+COPY copy/partkeepr-nginx.conf /etc/nginx/conf.d/default.conf
+RUN sed 's@;date.timezone =@date.timezone = UTC@;s@max_execution_time = .*@max_execution_time = 72000@;s@memory_limit = .*@memory_limit = 512M@' /usr/local/etc/php/php.ini-production > /usr/local/etc/php/php.ini
+
+#pull in the compiled PHP extensions + their .ini activation files from the builder
+COPY --from=builder /usr/local/lib/php/extensions/ /usr/local/lib/php/extensions/
+COPY --from=builder /usr/local/etc/php/conf.d/ /usr/local/etc/php/conf.d/
+
+#pull in the application source (patches applied, vendor/ installed, parameters.php removed)
+COPY --from=builder --chown=www-data:www-data $APP_HOME $APP_HOME
 
 EXPOSE 80
